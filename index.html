@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Creative Writing Assistant Demo</title>
+  <style>
+    :root{
+      --bg:#f6f7fb;
+      --card:#ffffff;
+      --ink:#182033;
+      --muted:#647086;
+      --line:#e7eaf2;
+      --accent:#5a7cff;
+      --accent-soft:#eef2ff;
+      --green:#42b883;
+      --orange:#f4a261;
+      --red:#e76f51;
+      --shadow:0 14px 40px rgba(24,32,51,.08);
+      --radius:24px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",Arial,sans-serif;
+      background:linear-gradient(180deg,#f7f8fc 0%,#eef2ff 100%);
+      color:var(--ink);
+      line-height:1.65;
+    }
+    .wrap{max-width:1120px;margin:0 auto;padding:42px 22px 70px}
+    .hero{
+      display:grid;
+      grid-template-columns:1.05fr .95fr;
+      gap:28px;
+      align-items:center;
+      margin-bottom:32px;
+    }
+    .badge{
+      display:inline-flex;
+      gap:8px;
+      align-items:center;
+      padding:7px 12px;
+      border-radius:999px;
+      background:var(--accent-soft);
+      color:#3f5ee8;
+      font-size:14px;
+      font-weight:600;
+      margin-bottom:18px;
+    }
+    .dot{width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block}
+    h1{font-size:46px;line-height:1.12;margin:0 0 18px;letter-spacing:-.8px}
+    .subtitle{font-size:18px;color:var(--muted);margin:0 0 26px}
+    .meta{display:flex;flex-wrap:wrap;gap:10px}
+    .pill{padding:8px 12px;border:1px solid var(--line);background:rgba(255,255,255,.75);border-radius:999px;color:#33405a;font-size:14px}
+    .card{
+      background:rgba(255,255,255,.9);
+      border:1px solid rgba(231,234,242,.9);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      padding:24px;
+    }
+    .demo-ui{
+      min-height:420px;
+      background:#121826;
+      color:#dce5ff;
+      border-radius:26px;
+      overflow:hidden;
+      box-shadow:0 24px 60px rgba(18,24,38,.26);
+      border:1px solid rgba(255,255,255,.08);
+    }
+    .topbar{display:flex;gap:8px;align-items:center;padding:16px 18px;border-bottom:1px solid rgba(255,255,255,.08)}
+    .mac{width:11px;height:11px;border-radius:50%;background:#ff5f57}
+    .mac:nth-child(2){background:#ffbd2e}
+    .mac:nth-child(3){background:#28c840}
+    .ui-body{display:grid;grid-template-columns:160px 1fr 210px;min-height:360px}
+    .side{padding:18px 14px;border-right:1px solid rgba(255,255,255,.08)}
+    .side div{padding:10px 12px;border-radius:12px;color:#9fb0d8;font-size:14px;margin-bottom:8px}
+    .side .active{background:rgba(90,124,255,.2);color:#fff}
+    .editor{padding:20px;border-right:1px solid rgba(255,255,255,.08)}
+    .chapter{font-weight:700;color:#fff;margin-bottom:12px}
+    .textline{height:12px;border-radius:999px;background:rgba(255,255,255,.16);margin:12px 0}
+    .textline.short{width:65%}
+    .highlight{background:rgba(66,184,131,.25);border:1px solid rgba(66,184,131,.45);border-radius:13px;padding:12px;margin:18px 0;color:#eefdf6;font-size:14px}
+    .ai-panel{padding:16px}
+    .reader-card{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:14px;margin-bottom:12px}
+    .reader-card b{display:block;color:#fff;margin-bottom:6px}
+    .small{font-size:13px;color:#aebce3}
+    .bar{height:9px;background:rgba(255,255,255,.12);border-radius:999px;overflow:hidden;margin-top:10px}
+    .bar span{display:block;height:100%;background:linear-gradient(90deg,var(--green),var(--accent));width:42%}
+    section{margin-top:24px}
+    .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+    .grid-2{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
+    h2{font-size:26px;margin:0 0 14px}
+    h3{font-size:18px;margin:0 0 8px}
+    p{margin:0;color:var(--muted)}
+    ul{margin:10px 0 0;padding-left:20px;color:var(--muted)}
+    li{margin:5px 0}
+    .feature{position:relative;overflow:hidden}
+    .feature::before{content:"";position:absolute;right:-30px;top:-30px;width:100px;height:100px;background:var(--accent-soft);border-radius:50%}
+    .num{font-size:28px;font-weight:800;color:var(--accent);margin-bottom:8px}
+    .flow{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:12px}
+    .step{background:#f8f9fd;border:1px solid var(--line);border-radius:18px;padding:16px;min-height:132px}
+    .step strong{display:block;margin-bottom:8px}
+    .taglist{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
+    .tag{background:#f8f9fd;border:1px solid var(--line);border-radius:12px;padding:8px 10px;color:#33405a;font-size:14px}
+    .role{background:#fbfcff;border-left:4px solid var(--accent);border-radius:18px;padding:18px}
+    .safe{background:#f8fffb;border:1px solid #d8f3e6}
+    .footer{margin-top:26px;text-align:center;color:#8791a6;font-size:13px}
+    @media (max-width:900px){
+      .hero,.grid-3,.grid-2,.flow{grid-template-columns:1fr}
+      h1{font-size:34px}
+      .ui-body{grid-template-columns:1fr}
+      .side,.editor{border-right:none;border-bottom:1px solid rgba(255,255,255,.08)}
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <header class="hero">
+      <div>
+        <div class="badge"><span class="dot"></span> Prototype Demo / AI Creative Writing</div>
+        <h1>AI 辅助创意写作系统 Demo</h1>
+        <p class="subtitle">
+          一个面向故事创作场景的 AI 写作原型，探索大语言模型如何在构思、章节生成、文本修订、虚拟读者反馈与人机贡献度感知中支持创作者。
+        </p>
+        <div class="meta">
+          <span class="pill">LLM Application</span>
+          <span class="pill">Prompt Engineering</span>
+          <span class="pill">Human-AI Collaboration</span>
+          <span class="pill">User Study</span>
+        </div>
+      </div>
+
+      <div class="demo-ui" aria-label="Demo mockup">
+        <div class="topbar">
+          <span class="mac"></span><span class="mac"></span><span class="mac"></span>
+          <span style="margin-left:10px;color:#9fb0d8;font-size:13px">AI Writing Workspace</span>
+        </div>
+        <div class="ui-body">
+          <div class="side">
+            <div class="active">正文</div>
+            <div>角色库</div>
+            <div>画布</div>
+            <div>章节结构</div>
+          </div>
+          <div class="editor">
+            <div class="chapter">Chapter 03 · 高潮</div>
+            <div class="textline"></div>
+            <div class="textline"></div>
+            <div class="highlight">AI 建议：当前段落情绪推进较快，可以补充人物动作与停顿，让转折更自然。</div>
+            <div class="textline"></div>
+            <div class="textline short"></div>
+            <div class="bar"><span></span></div>
+            <div class="small">Human-AI Contribution: Human 58% / AI 42%</div>
+          </div>
+          <div class="ai-panel">
+            <div class="reader-card">
+              <b>虚拟读者反馈</b>
+              <div class="small">从节奏、逻辑、情绪表达等角度提供评论。</div>
+            </div>
+            <div class="reader-card">
+              <b>Writing Mentor</b>
+              <div class="small">给出可操作的修订建议，但不自动替作者改写正文。</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <section class="grid-3">
+      <div class="card feature">
+        <div class="num">01</div>
+        <h3>AI 生成与修订</h3>
+        <p>支持章节生成、局部修订、内容优化、长度调整与对话式写作辅助，帮助作者快速推进草稿。</p>
+      </div>
+      <div class="card feature">
+        <div class="num">02</div>
+        <h3>虚拟读者反馈</h3>
+        <p>模拟不同读者视角，对叙事节奏、情绪表达、逻辑连贯性和读者接受度进行反馈。</p>
+      </div>
+      <div class="card feature">
+        <div class="num">03</div>
+        <h3>贡献度可视化</h3>
+        <p>展示人类作者与 AI 在文本中的参与比例，帮助用户感知创作控制权与作品所有权。</p>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>项目概述</h2>
+      <p>
+        本项目面向 AI 创意写作场景，重点不是让 AI 完全替代作者完成文本，而是让 AI 成为创作过程中的协作者、读者和写作导师。系统通过文本生成、反馈建议与贡献度可视化，帮助作者在保持主体性的同时提升创作效率和反思能力。
+      </p>
+    </section>
+
+    <section class="card">
+      <h2>Demo 工作流</h2>
+      <div class="flow">
+        <div class="step">
+          <strong>1. 选择主题</strong>
+          <p>用户选择故事主题，并确定目标读者、人物设定和章节方向。</p>
+        </div>
+        <div class="step">
+          <strong>2. 生成草稿</strong>
+          <p>AI 根据用户设定生成章节草稿，用户可进行保留、修改或重写。</p>
+        </div>
+        <div class="step">
+          <strong>3. 接收反馈</strong>
+          <p>虚拟读者和写作导师从读者体验与写作技巧角度给出建议。</p>
+        </div>
+        <div class="step">
+          <strong>4. 迭代作品</strong>
+          <p>用户根据反馈继续修订，并通过贡献度可视化理解人机协作边界。</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="grid-2">
+      <div class="card">
+        <h2>主要技术栈</h2>
+        <div class="taglist">
+          <span class="tag">Vue.js / JavaScript</span>
+          <span class="tag">Web Frontend</span>
+          <span class="tag">LLM API</span>
+          <span class="tag">Prompt Engineering</span>
+          <span class="tag">AI Text Generation</span>
+          <span class="tag">Virtual Reader Feedback</span>
+          <span class="tag">Human-AI Attribution</span>
+          <span class="tag">Behavior Log Analysis</span>
+          <span class="tag">Questionnaire & Interview</span>
+          <span class="tag">VS Code / Codex / ChatGPT</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>研究评估</h2>
+        <ul>
+          <li>比较基础模式、仅贡献度可视化、仅虚拟读者反馈、完整功能模式。</li>
+          <li>记录 AI 功能使用、建议采纳、编辑行为、贡献度查看与反馈响应。</li>
+          <li>结合问卷、Think Aloud、半结构化访谈与行为日志评估系统体验。</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="grid-2">
+      <div class="card role">
+        <h2>我的参与</h2>
+        <ul>
+          <li>参与项目方案梳理与功能逻辑整理。</li>
+          <li>协助设计用户实验流程、任务说明与访谈问题。</li>
+          <li>整理用户反馈，分析虚拟读者与贡献度可视化的使用体验。</li>
+          <li>将系统功能、研究流程与技术栈整理为对外项目表达材料。</li>
+        </ul>
+      </div>
+
+      <div class="card safe">
+        <h2>对外展示说明</h2>
+        <p>
+          本展示页为删敏版 Demo 介绍，不包含参与者姓名、内部问卷链接、服务器地址、协作者 @ 信息、原始访谈内容或未公开数据，可用于报名表中的项目展示链接/附件说明。
+        </p>
+      </div>
+    </section>
+
+    <div class="footer">
+      AI Creative Writing Assistant Demo · Sanitized project showcase page
+    </div>
+  </main>
+</body>
+</html>

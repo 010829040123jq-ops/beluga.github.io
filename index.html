@@ -1,0 +1,1080 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Writing Lab</title>
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --card: rgba(255, 255, 255, 0.92);
+      --ink: #111827;
+      --muted: #64748b;
+      --line: rgba(148, 163, 184, 0.22);
+      --blue: #5167f6;
+      --violet: #8b5cf6;
+      --green: #28b981;
+      --shadow: 0 20px 60px rgba(15, 23, 42, 0.10);
+      --shadow-soft: 0 12px 28px rgba(15, 23, 42, 0.08);
+      --radius: 24px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+        "Microsoft YaHei", Arial, sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 8% 8%, rgba(81, 103, 246, 0.18), transparent 32%),
+        radial-gradient(circle at 85% 12%, rgba(40, 185, 129, 0.14), transparent 30%),
+        radial-gradient(circle at 58% 92%, rgba(139, 92, 246, 0.11), transparent 34%),
+        linear-gradient(180deg, #fbfcff 0%, #eef3ff 100%);
+    }
+
+    button, input, select, textarea {
+      font-family: inherit;
+    }
+
+    .app-shell {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 280px minmax(0, 1fr);
+    }
+
+    .sidebar {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      padding: 24px;
+      color: white;
+      background:
+        linear-gradient(180deg, rgba(17, 24, 39, 0.96), rgba(15, 23, 42, 0.94)),
+        radial-gradient(circle at 20% 0%, rgba(81, 103, 246, 0.32), transparent 38%);
+      display: flex;
+      flex-direction: column;
+      gap: 22px;
+      border-right: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding-bottom: 6px;
+    }
+
+    .brand-mark {
+      width: 48px;
+      height: 48px;
+      border-radius: 18px;
+      display: grid;
+      place-items: center;
+      font-weight: 900;
+      letter-spacing: -0.04em;
+      background: linear-gradient(135deg, var(--green), var(--blue), var(--violet));
+      box-shadow: 0 14px 28px rgba(81, 103, 246, 0.35);
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-size: 20px;
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+    }
+
+    .brand p {
+      margin: 4px 0 0;
+      color: #aeb8d6;
+      font-size: 13px;
+    }
+
+    .nav {
+      display: grid;
+      gap: 10px;
+    }
+
+    .nav button {
+      border: 0;
+      width: 100%;
+      text-align: left;
+      cursor: pointer;
+      color: #b6c0dc;
+      background: transparent;
+      padding: 13px 14px;
+      border-radius: 16px;
+      font-size: 15px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: 0.18s ease;
+    }
+
+    .nav button:hover,
+    .nav button.active {
+      color: white;
+      background: rgba(255, 255, 255, 0.11);
+      transform: translateX(2px);
+    }
+
+    .nav-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 10px;
+      display: grid;
+      place-items: center;
+      background: rgba(255, 255, 255, 0.08);
+      font-size: 14px;
+    }
+
+    .sidebar-card {
+      margin-top: auto;
+      padding: 18px;
+      border-radius: 22px;
+      background: rgba(255, 255, 255, 0.09);
+      border: 1px solid rgba(255, 255, 255, 0.10);
+      color: #dbe4ff;
+      line-height: 1.65;
+    }
+
+    .sidebar-card strong {
+      display: block;
+      margin-bottom: 8px;
+      color: #fff;
+    }
+
+    .sidebar-card p {
+      margin: 0;
+      font-size: 13px;
+      color: #aeb8d6;
+    }
+
+    .main {
+      min-width: 0;
+      padding: 28px;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 18px;
+      margin-bottom: 24px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin: 0 0 10px;
+      padding: 7px 11px;
+      border-radius: 999px;
+      background: rgba(81, 103, 246, 0.10);
+      color: #4156d9;
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .eyebrow::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 0 5px rgba(40, 185, 129, 0.14);
+    }
+
+    .topbar h2 {
+      margin: 0;
+      font-size: clamp(28px, 4vw, 42px);
+      line-height: 1.08;
+      letter-spacing: -0.05em;
+    }
+
+    .topbar-subtitle {
+      margin: 10px 0 0;
+      max-width: 680px;
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.7;
+    }
+
+    .status {
+      flex: 0 0 auto;
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      padding: 11px 14px;
+      border-radius: 999px;
+      color: #334155;
+      background: rgba(255, 255, 255, 0.72);
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow-soft);
+      font-size: 14px;
+      font-weight: 800;
+    }
+
+    .status-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: var(--green);
+    }
+
+    .view {
+      display: none;
+      animation: fadeIn 0.22s ease;
+    }
+
+    .view.active-view {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 380px;
+      gap: 22px;
+      align-items: start;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid rgba(255, 255, 255, 0.74);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+      overflow: hidden;
+    }
+
+    .card-inner {
+      padding: 22px;
+    }
+
+    .editor-card {
+      min-height: 680px;
+    }
+
+    .card-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 20px 22px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.58);
+    }
+
+    .label {
+      display: block;
+      margin: 0 0 7px;
+      color: #5264de;
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .card-header h3,
+    .mini-title {
+      margin: 0;
+      font-size: 20px;
+      letter-spacing: -0.03em;
+    }
+
+    .field-grid {
+      display: grid;
+      grid-template-columns: 1fr 132px;
+      gap: 14px;
+      margin-bottom: 16px;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.82);
+      color: var(--ink);
+      border-radius: 15px;
+      padding: 12px 13px;
+      outline: none;
+      transition: 0.18s ease;
+      font-size: 15px;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      border-color: rgba(81, 103, 246, 0.55);
+      box-shadow: 0 0 0 5px rgba(81, 103, 246, 0.10);
+      background: white;
+    }
+
+    .title-input {
+      font-size: 25px;
+      font-weight: 900;
+      letter-spacing: -0.04em;
+      border-color: transparent;
+      background: transparent;
+      padding-left: 0;
+      border-radius: 0;
+    }
+
+    .title-input:focus {
+      box-shadow: none;
+      border-color: transparent;
+      background: transparent;
+    }
+
+    textarea {
+      min-height: 430px;
+      resize: vertical;
+      line-height: 1.86;
+      background:
+        linear-gradient(rgba(255,255,255,0.90), rgba(255,255,255,0.90)),
+        repeating-linear-gradient(transparent 0 31px, rgba(148, 163, 184, 0.14) 32px);
+    }
+
+    .action-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 15px;
+    }
+
+    button.primary,
+    .action-row button,
+    .full-btn {
+      border: 0;
+      cursor: pointer;
+      color: white;
+      background: linear-gradient(135deg, var(--blue), var(--violet));
+      border-radius: 14px;
+      padding: 11px 14px;
+      font-weight: 900;
+      box-shadow: 0 12px 20px rgba(81, 103, 246, 0.18);
+      transition: 0.18s ease;
+    }
+
+    button.primary:hover,
+    .action-row button:hover,
+    .full-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 16px 28px rgba(81, 103, 246, 0.24);
+    }
+
+    .secondary-btn {
+      border: 1px solid var(--line);
+      background: white;
+      color: #334155;
+      box-shadow: none;
+      border-radius: 14px;
+      padding: 11px 14px;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    .right-stack {
+      display: grid;
+      gap: 18px;
+    }
+
+    .compact-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .compact-header select {
+      max-width: 132px;
+    }
+
+    .full-btn {
+      width: 100%;
+      margin-bottom: 12px;
+    }
+
+    .feedback-box {
+      min-height: 126px;
+      padding: 15px;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(248,250,252,0.92), rgba(255,255,255,0.90));
+      color: #334155;
+      line-height: 1.74;
+      font-size: 14px;
+    }
+
+    .muted {
+      color: var(--muted);
+    }
+
+    .mentor-list {
+      margin: 0;
+      padding-left: 19px;
+      color: #475569;
+      line-height: 1.75;
+      font-size: 14px;
+    }
+
+    .meter {
+      height: 13px;
+      border-radius: 999px;
+      overflow: hidden;
+      background: #e9eef8;
+      margin-top: 6px;
+    }
+
+    .meter span {
+      display: block;
+      width: 0%;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--green), var(--blue));
+      transition: width 0.28s ease;
+    }
+
+    .split {
+      display: flex;
+      justify-content: space-between;
+      margin: 11px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .split b {
+      color: var(--ink);
+      font-size: 17px;
+    }
+
+    .hint {
+      margin: 12px 0 0;
+      color: var(--muted);
+      line-height: 1.65;
+      font-size: 13px;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 22px;
+    }
+
+    .role-form {
+      display: grid;
+      grid-template-columns: 1fr 1.35fr auto;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .item {
+      padding: 14px 15px;
+      border-radius: 17px;
+      background: rgba(248, 250, 252, 0.92);
+      border: 1px solid var(--line);
+      color: #64748b;
+      line-height: 1.62;
+    }
+
+    .item b {
+      display: block;
+      color: #0f172a;
+      margin-bottom: 4px;
+    }
+
+    .canvas-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin: 18px 0;
+    }
+
+    .canvas-node {
+      position: relative;
+      min-height: 122px;
+      border-radius: 22px;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      padding: 18px;
+      font-weight: 900;
+      color: #334155;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.94), rgba(248,250,252,0.92));
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow-soft);
+    }
+
+    .canvas-node::after {
+      content: "";
+      position: absolute;
+      right: -18px;
+      top: 50%;
+      width: 20px;
+      height: 2px;
+      background: linear-gradient(90deg, var(--blue), transparent);
+    }
+
+    .canvas-node:nth-child(3)::after,
+    .canvas-node:nth-child(6)::after {
+      display: none;
+    }
+
+    .body-text {
+      color: var(--muted);
+      line-height: 1.75;
+      margin: 0;
+    }
+
+    .loading {
+      pointer-events: none;
+      opacity: 0.72;
+    }
+
+
+    .audience-section {
+      margin-bottom: 22px;
+    }
+
+    .audience-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .audience-card {
+      position: relative;
+      padding: 18px;
+      border-radius: 22px;
+      background: rgba(255, 255, 255, 0.86);
+      border: 1px solid rgba(255, 255, 255, 0.74);
+      box-shadow: var(--shadow-soft);
+      overflow: hidden;
+    }
+
+    .audience-card::after {
+      content: "";
+      position: absolute;
+      right: -28px;
+      top: -28px;
+      width: 92px;
+      height: 92px;
+      border-radius: 50%;
+      background: rgba(81, 103, 246, 0.10);
+    }
+
+    .audience-card h3 {
+      position: relative;
+      z-index: 1;
+      margin: 0 0 8px;
+      font-size: 17px;
+      letter-spacing: -0.02em;
+    }
+
+    .audience-card p {
+      position: relative;
+      z-index: 1;
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.7;
+    }
+
+    .audience-card .tag {
+      display: inline-flex;
+      position: relative;
+      z-index: 1;
+      margin-bottom: 12px;
+      padding: 6px 9px;
+      border-radius: 999px;
+      background: rgba(81, 103, 246, 0.10);
+      color: #4156d9;
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    @media (max-width: 1080px) {
+      .app-shell {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        position: relative;
+        height: auto;
+      }
+
+      .nav {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+
+      .workspace,
+      .grid-2,
+      .role-form,
+      .canvas-grid,
+      .audience-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .canvas-node::after {
+        display: none;
+      }
+    }
+
+    @media (max-width: 720px) {
+      .main {
+        padding: 18px;
+      }
+
+      .topbar,
+      .field-grid,
+      .card-header {
+        flex-direction: column;
+        display: flex;
+        align-items: stretch;
+      }
+
+      .nav {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .status {
+        align-self: flex-start;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">AI</div>
+        <div>
+          <h1>AI Writing Lab</h1>
+          <p>Creative Writing Assistant</p>
+        </div>
+      </div>
+
+      <nav class="nav">
+        <button class="tab active" data-view="write"><span class="nav-icon">✍️</span> 正文写作</button>
+        <button class="tab" data-view="roles"><span class="nav-icon">👥</span> 角色库</button>
+        <button class="tab" data-view="canvas"><span class="nav-icon">🧩</span> 故事画布</button>
+        <button class="tab" data-view="logs"><span class="nav-icon">📊</span> 行为日志</button>
+      </nav>
+
+      <div class="sidebar-card">
+        <strong>System Modules</strong>
+        <p>面向学生写作训练、小说草稿创作、内容创作辅助与 AI 写作工具研究等场景。</p>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Human-AI Collaborative Writing</p>
+          <h2>AI辅助创意写作系统</h2>
+          <p class="topbar-subtitle">面向有创意写作需求的学生、内容创作者与新手写作者，覆盖故事构思、章节起草、文本修改、读者视角检查和人机协作反思等写作场景。</p>
+        </div>
+        <div class="status" id="status"><span class="status-dot"></span><span>Ready</span></div>
+      </header>
+
+
+      <section class="audience-section">
+        <div class="audience-grid">
+          <article class="audience-card">
+            <span class="tag">Target User 01</span>
+            <h3>学生与写作学习者</h3>
+            <p>适用于课程作业、创意写作练习、故事梗概训练和文本修改训练，帮助用户从结构、节奏和表达层面获得反馈。</p>
+          </article>
+          <article class="audience-card">
+            <span class="tag">Target User 02</span>
+            <h3>小说与内容创作者</h3>
+            <p>适用于短篇小说、连载故事、剧本片段、人物设定和章节草稿创作，辅助作者快速推进初稿并检查读者体验。</p>
+          </article>
+          <article class="audience-card">
+            <span class="tag">Target User 03</span>
+            <h3>AI写作工具研究与产品设计</h3>
+            <p>适用于验证人机协作写作流程，观察 AI 反馈、贡献度可视化和虚拟读者机制如何影响作者的控制感与修改决策。</p>
+          </article>
+        </div>
+      </section>
+
+      <section id="write" class="view active-view">
+        <div class="workspace">
+          <section class="card editor-card">
+            <div class="card-header">
+              <div>
+                <span class="label">Story Project</span>
+                <input id="titleInput" class="title-input" value="神秘的社团招新" />
+              </div>
+              <div>
+                <span class="label">Chapter</span>
+                <select id="chapterSelect">
+                  <option>开头</option>
+                  <option>发展</option>
+                  <option>高潮</option>
+                  <option>结尾</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="card-inner">
+              <div class="field-grid">
+                <div>
+                  <span class="label">Writing Area</span>
+                  <p class="hint" style="margin-top:0;">在这里写作，或使用下方 AI 功能辅助生成与修改。</p>
+                </div>
+              </div>
+
+              <textarea id="editor" placeholder="在这里写作，或点击下方功能让 AI 辅助生成。"></textarea>
+
+              <div class="action-row">
+                <button data-task="generate">生成章节草稿</button>
+                <button data-task="revise">优化文本</button>
+                <button data-task="expand">扩写细节</button>
+                <button data-task="shorten">压缩表达</button>
+                <button data-task="continue">续写下一段</button>
+              </div>
+            </div>
+          </section>
+
+          <aside class="right-stack">
+            <section class="card">
+              <div class="card-inner">
+                <div class="compact-header">
+                  <div>
+                    <span class="label">Virtual Reader</span>
+                    <h3 class="mini-title">虚拟读者反馈</h3>
+                  </div>
+                  <select id="personaSelect">
+                    <option>普通读者</option>
+                    <option>节奏大师</option>
+                    <option>无情评审员</option>
+                    <option>情绪型读者</option>
+                  </select>
+                </div>
+                <button id="readerBtn" class="full-btn">获取读者反馈</button>
+                <div id="readerBox" class="feedback-box muted">虚拟读者会从读者视角评价节奏、逻辑、情绪和可读性。</div>
+              </div>
+            </section>
+
+            <section class="card">
+              <div class="card-inner">
+                <span class="label">Writing Mentor</span>
+                <h3 class="mini-title">写作导师建议</h3>
+                <button id="mentorBtn" class="full-btn" style="margin-top:14px;">生成写作建议</button>
+                <ul id="mentorList" class="mentor-list">
+                  <li>先明确这一章的核心冲突。</li>
+                  <li>AI 的内容建议二次编辑后再使用。</li>
+                </ul>
+              </div>
+            </section>
+
+            <section class="card">
+              <div class="card-inner">
+                <span class="label">Human-AI Attribution</span>
+                <h3 class="mini-title">贡献度可视化</h3>
+                <div class="meter"><span id="meterFill"></span></div>
+                <div class="split">
+                  <span>Human <b id="humanPct">100%</b></span>
+                  <span>AI <b id="aiPct">0%</b></span>
+                </div>
+                <p class="hint">根据人工编辑和 AI 调用行为估算，用于提醒人机协作边界。</p>
+              </div>
+            </section>
+          </aside>
+        </div>
+      </section>
+
+      <section id="roles" class="view">
+        <div class="grid-2">
+          <section class="card">
+            <div class="card-header">
+              <div>
+                <span class="label">Characters</span>
+                <h3>角色库</h3>
+              </div>
+            </div>
+            <div class="card-inner">
+              <div class="role-form">
+                <input id="roleName" placeholder="角色名" />
+                <input id="roleDesc" placeholder="角色设定" />
+                <button id="addRoleBtn" class="primary">添加</button>
+              </div>
+              <div id="roleList" class="list"></div>
+            </div>
+          </section>
+
+          <section class="card">
+            <div class="card-header">
+              <div>
+                <span class="label">Usage</span>
+                <h3>角色库用途</h3>
+              </div>
+            </div>
+            <div class="card-inner">
+              <p class="body-text">角色库用于维护人物设定、动机与关系，可与章节生成和文本修订功能联动，提升长文本创作的一致性。</p>
+            </div>
+          </section>
+        </div>
+      </section>
+
+      <section id="canvas" class="view">
+        <section class="card">
+          <div class="card-header">
+            <div>
+              <span class="label">Story Canvas</span>
+              <h3>故事画布</h3>
+            </div>
+          </div>
+          <div class="card-inner">
+            <div class="canvas-grid">
+              <div class="canvas-node">主题设定</div>
+              <div class="canvas-node">角色动机</div>
+              <div class="canvas-node">核心冲突</div>
+              <div class="canvas-node">章节推进</div>
+              <div class="canvas-node">读者反馈</div>
+              <div class="canvas-node">作者修订</div>
+            </div>
+            <p class="hint">非线性创作节点用于组织故事结构、人物关系与反馈线索。</p>
+          </div>
+        </section>
+      </section>
+
+      <section id="logs" class="view">
+        <section class="card">
+          <div class="card-header">
+            <div>
+              <span class="label">Behavior Logs</span>
+              <h3>行为日志</h3>
+            </div>
+            <button id="clearLogBtn" class="secondary-btn">清空</button>
+          </div>
+          <div class="card-inner">
+            <div id="logList" class="list"></div>
+          </div>
+        </section>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const $ = (s) => document.querySelector(s);
+    const $$ = (s) => document.querySelectorAll(s);
+
+    const state = {
+      humanEdits: 1,
+      aiActions: 0,
+      roles: [
+        { name: "林安", desc: "新生，收到神秘社团招新传单。" },
+        { name: "周予", desc: "社团负责人，知道旧图书馆的秘密。" }
+      ],
+      logs: []
+    };
+
+    function setStatus(text) {
+      $("#status").innerHTML = `<span class="status-dot"></span><span>${escapeHTML(text)}</span>`;
+    }
+
+    function addLog(text) {
+      const time = new Date().toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit" });
+      state.logs.unshift(`${time} · ${text}`);
+      renderLogs();
+      saveLocal();
+    }
+
+    function renderLogs() {
+      $("#logList").innerHTML = state.logs.length
+        ? state.logs.map(log => `<div class="item">${escapeHTML(log)}</div>`).join("")
+        : `<div class="item">暂无行为日志。</div>`;
+    }
+
+    function renderRoles() {
+      $("#roleList").innerHTML = state.roles.map(role => `
+        <div class="item"><b>${escapeHTML(role.name)}</b>${escapeHTML(role.desc)}</div>
+      `).join("");
+    }
+
+    function updateAttribution() {
+      const total = state.humanEdits + state.aiActions;
+      const ai = Math.min(90, Math.round((state.aiActions / total) * 100));
+      const human = 100 - ai;
+      $("#meterFill").style.width = `${ai}%`;
+      $("#aiPct").textContent = `${ai}%`;
+      $("#humanPct").textContent = `${human}%`;
+    }
+
+    function escapeHTML(str) {
+      return String(str).replace(/[&<>"']/g, (m) => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;"
+      }[m]));
+    }
+
+    function saveLocal() {
+      localStorage.setItem("ai-writing-app", JSON.stringify({
+        text: $("#editor").value,
+        title: $("#titleInput").value,
+        roles: state.roles,
+        logs: state.logs,
+        humanEdits: state.humanEdits,
+        aiActions: state.aiActions
+      }));
+    }
+
+    function loadLocal() {
+      const raw = localStorage.getItem("ai-writing-app");
+      if (!raw) {
+        $("#editor").value = "她在旧图书馆门口停住脚步，传单上的墨迹在夜色里像刚刚写下的一样清晰。";
+        renderRoles();
+        renderLogs();
+        updateAttribution();
+        return;
+      }
+
+      try {
+        const data = JSON.parse(raw);
+        $("#editor").value = data.text || "";
+        $("#titleInput").value = data.title || "神秘的社团招新";
+        state.roles = data.roles || state.roles;
+        state.logs = data.logs || [];
+        state.humanEdits = data.humanEdits || 1;
+        state.aiActions = data.aiActions || 0;
+      } catch {}
+
+      renderRoles();
+      renderLogs();
+      updateAttribution();
+    }
+
+    async function callAI(task) {
+      const payload = {
+        task,
+        title: $("#titleInput").value,
+        chapter: $("#chapterSelect").value,
+        text: $("#editor").value,
+        persona: $("#personaSelect").value,
+        roles: state.roles
+      };
+
+      setStatus("Processing");
+      document.body.classList.add("loading");
+
+      try {
+        const res = await fetch("/api/generate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Request failed");
+
+        state.aiActions += 1;
+        updateAttribution();
+        saveLocal();
+        setStatus("Completed");
+        return data.result;
+      } catch (err) {
+        console.error(err);
+        state.aiActions += 1;
+        updateAttribution();
+        setStatus("Completed");
+        return fallback(task, payload);
+      } finally {
+        document.body.classList.remove("loading");
+      }
+    }
+
+    function fallback(task, payload) {
+      const samples = {
+        generate: `【${payload.chapter}】旧图书馆的灯忽然亮了。${payload.title}的秘密从一张招新传单开始，主角在半信半疑中走进三层走廊，却发现墙上的照片都在看着自己。`,
+        revise: `${payload.text}\n\n【优化建议】可以进一步补充人物动机，并让关键转折前有一个更明显的情绪停顿。`,
+        expand: `${payload.text}\n\n她没有立刻推门。门缝里透出的光像一条细线，把她和那个未知的社团连接在一起。`,
+        shorten: payload.text.split(/[。！？\n]/).filter(Boolean).slice(0, 3).join("。") + "。",
+        continue: `${payload.text}\n\n就在她准备离开时，走廊尽头传来一声极轻的钟响。`,
+        reader: `${payload.persona}：这一段氛围不错，但人物动机还可以更明确。建议补充主角为什么愿意继续探索。`,
+        mentor: `- 明确本章核心冲突。\n- 增加人物动作细节。\n- 保留 AI 的结构，但用自己的语言重写关键句。`
+      };
+      return samples[task] || "已生成内容。";
+    }
+
+    $$(".tab").forEach(btn => {
+      btn.addEventListener("click", () => {
+        $$(".tab").forEach(b => b.classList.remove("active"));
+        $$(".view").forEach(v => v.classList.remove("active-view"));
+        btn.classList.add("active");
+        $("#" + btn.dataset.view).classList.add("active-view");
+      });
+    });
+
+    $$("[data-task]").forEach(btn => {
+      btn.addEventListener("click", async () => {
+        const task = btn.dataset.task;
+        const result = await callAI(task);
+        $("#editor").value = result;
+        addLog(`执行功能：${btn.textContent}`);
+      });
+    });
+
+    $("#readerBtn").addEventListener("click", async () => {
+      const result = await callAI("reader");
+      $("#readerBox").classList.remove("muted");
+      $("#readerBox").textContent = result;
+      addLog(`获取读者反馈：${$("#personaSelect").value}`);
+    });
+
+    $("#mentorBtn").addEventListener("click", async () => {
+      const result = await callAI("mentor");
+      $("#mentorList").innerHTML = result
+        .split("\n")
+        .filter(Boolean)
+        .map(line => `<li>${escapeHTML(line.replace(/^[-•]\s*/, ""))}</li>`)
+        .join("");
+      addLog("生成写作建议");
+    });
+
+    $("#editor").addEventListener("input", () => {
+      state.humanEdits += 1;
+      updateAttribution();
+      saveLocal();
+    });
+
+    $("#titleInput").addEventListener("input", saveLocal);
+
+    $("#addRoleBtn").addEventListener("click", () => {
+      const name = $("#roleName").value.trim();
+      const desc = $("#roleDesc").value.trim();
+      if (!name || !desc) return;
+      state.roles.push({ name, desc });
+      $("#roleName").value = "";
+      $("#roleDesc").value = "";
+      renderRoles();
+      addLog(`添加角色：${name}`);
+      saveLocal();
+    });
+
+    $("#clearLogBtn").addEventListener("click", () => {
+      state.logs = [];
+      renderLogs();
+      saveLocal();
+    });
+
+    loadLocal();
+  </script>
+</body>
+</html>
